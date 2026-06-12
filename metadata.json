@@ -1,0 +1,6 @@
+{
+  "name": "Moraine Go Tours",
+  "description": "Reliable Shuttle and Tour Services Between Banff, Lake Louise & Moraine Lake",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Playball&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cinzel', Georgia, serif;
+  --font-script: 'Playball', cursive;
+  --font-accent: 'Montserrat', sans-serif;
+
+  --color-brand-blue: #0A3254;
+  --color-brand-cyan: #077B8A;
+  --color-brand-gold: #C5A059;
+  --color-brand-dark: #0D1B2A;
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 2px 10px rgba(7, 123, 138, 0.2);
+  }
+}
+
