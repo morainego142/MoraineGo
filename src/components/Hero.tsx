@@ -11,16 +11,16 @@ export default function Hero({ onBookClick, onConciergeClick }: HeroProps) {
   return (
     <section className="relative w-full min-h-[78vh] flex items-center justify-center overflow-hidden">
       {/* Cinematic Widescreen Background Photo (Generated real photo of Moraine Lake and 10 Peaks) */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 bg-slate-900">
         <img
           src={heroBg}
           alt="Majestic Moraine Lake and Valley of the Ten Peaks"
-          className="w-full h-full object-cover scale-102 hover:scale-105 transition-all duration-10000 ease-out"
+          className="w-full h-full object-cover object-[center_35%] scale-102 hover:scale-105 transition-all duration-10000 ease-out opacity-90 sm:opacity-100"
           referrerPolicy="no-referrer"
         />
-        {/* Dual Gradient Overlay: Darkening bottom/top for legibility and adding brand-blue cast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/95 via-brand-dark/40 to-brand-dark/85" />
-        <div className="absolute inset-0 bg-brand-blue/20 mix-blend-color-burn" stroke-opacity="0.5" />
+        {/* Dual Gradient Overlay: Darkening bottom/top for high legibility, keeping a lighter vibrance on mobile */}
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/70 via-brand-dark/20 to-brand-dark/60 sm:from-brand-dark/90 sm:via-brand-dark/35 sm:to-brand-dark/75" />
+        <div className="absolute inset-0 bg-[#077B8A]/10 sm:bg-[#077B8A]/20 mix-blend-overlay" />
       </div>
 
       {/* Content wrapper */}

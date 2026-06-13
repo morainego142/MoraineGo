@@ -181,7 +181,7 @@ export default function Header({ onBookClick, onConciergeClick }: HeaderProps) {
       <div className="w-full bg-white text-[#0D1B2A] py-3 px-6 sticky top-0 transition-all shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto flex justify-between items-center bg-white">
           {/* Logo */}
-          <Logo />
+          <Logo size="md" />
 
           {/* Desktop Navigation Link Menu */}
           <nav className="hidden xl:flex items-center gap-[18px]">

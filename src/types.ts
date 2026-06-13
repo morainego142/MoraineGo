@@ -24,6 +24,8 @@ export interface Booking {
   passengerName: string;
   email: string;
   phone: string;
+  pickupAddress?: string;
+  postalCode?: string;
   totalPrice: number;
   bookingCode: string;
   createdAt: string;

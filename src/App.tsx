@@ -6,6 +6,7 @@ import DestinationsList from './components/DestinationsList';
 import ConciergeBot from './components/ConciergeBot';
 import Footer from './components/Footer';
 import WildlifeGallery from './components/WildlifeGallery';
+import AdminPanel from './components/AdminPanel';
 import { ShieldCheck, Snowflake, Star, HelpCircle, Compass, Sparkles, MessageSquare, BookOpen, Clock, Calendar, CheckSquare, Shield, ArrowRight } from 'lucide-react';
 import { WHY_CHOOSE_US, DISCOVER_BANFF_TOURS_COPIES } from './data';
 import shuttleImg from './assets/images/shuttle_van_1781302534888.jpg';
@@ -14,6 +15,7 @@ import { Booking } from './types';
 
 export default function App() {
   const [isConciergeOpen, setIsConciergeOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
 
   const handleBookingSuccess = (booking: Booking) => {
@@ -479,8 +481,14 @@ export default function App() {
         onClose={handleConciergeToggle} 
       />
 
+      {/* Operator Dashboard Notification Panel */}
+      <AdminPanel 
+        isOpen={isAdminOpen} 
+        onClose={() => setIsAdminOpen(false)} 
+      />
+
       {/* 9. Footer directory */}
-      <Footer />
+      <Footer onAdminOpen={() => setIsAdminOpen(true)} />
     </div>
   );
 }

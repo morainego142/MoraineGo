@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Compass, Sparkles, HelpCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { ChatMessage } from '../types';
 
 interface ConciergeBotProps {
@@ -131,8 +132,8 @@ export default function ConciergeBot({ isOpen, onClose }: ConciergeBotProps) {
             className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'self-end bg-brand-cyan text-white rounded-l-2xl rounded-tr-2xl p-3' : 'bg-slate-100 text-gray-800 rounded-r-2xl rounded-tl-2xl p-3 border border-gray-150'}`}
           >
             {/* Display Rich markdown rendering nicely simulated or handled */}
-            <div className="whitespace-pre-line leading-relaxed font-sans">
-              {msg.content}
+            <div className="markdown-body leading-relaxed font-sans">
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
             </div>
             <span className={`text-[8px] mt-1.5 self-end ${msg.role === 'user' ? 'text-white/70' : 'text-gray-400'}`}>
               {msg.timestamp}

@@ -6,15 +6,34 @@ interface LogoProps {
   className?: string;
   showText?: boolean;
   light?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export default function Logo({ className = '', showText = true, light = false }: LogoProps) {
+export default function Logo({ className = '', showText = true, light = false, size = 'lg' }: LogoProps) {
   const primaryColor = light ? 'text-white' : 'text-[#0a1e33]';
   const [isZoomed, setIsZoomed] = useState(false);
 
+  // Define sizes for the logo image, text, and gap
+  let imgSizeClasses = "h-28 w-28 sm:h-36 sm:w-36 md:h-44 md:w-44";
+  let titleTextClasses = "text-[18px] sm:text-[20px] md:text-[22px] tracking-wider";
+  let subtitleTextClasses = "text-[9px] sm:text-[10px] md:text-[11px] mt-1 tracking-[0.16em]";
+  let containerGapClasses = "gap-4";
+
+  if (size === 'sm') {
+    imgSizeClasses = "h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18";
+    titleTextClasses = "text-[13px] sm:text-[14px] md:text-[15px] tracking-wide";
+    subtitleTextClasses = "text-[7.5px] sm:text-[8px] md:text-[8.5px] mt-0.5 tracking-[0.10em]";
+    containerGapClasses = "gap-2.5";
+  } else if (size === 'md') {
+    imgSizeClasses = "h-18 w-18 sm:h-22 sm:w-22 md:h-26 md:w-26";
+    titleTextClasses = "text-[15px] sm:text-[17px] md:text-[18px] tracking-wider";
+    subtitleTextClasses = "text-[8px] sm:text-[9px] md:text-[9.5px] mt-1 tracking-[0.12em]";
+    containerGapClasses = "gap-3";
+  }
+
   return (
     <>
-      <div className={`flex items-center gap-4 ${className}`}>
+      <div className={`flex items-center ${containerGapClasses} ${className}`}>
         {/* High-Fidelity Custom Generated Brand Logo with Zoom Trigger */}
         <button
           onClick={() => setIsZoomed(true)}
@@ -24,7 +43,7 @@ export default function Logo({ className = '', showText = true, light = false }:
           <img
             src={logoImg}
             alt="Moraine Go Tours Logo"
-            className="h-28 w-28 sm:h-36 sm:w-36 md:h-44 md:w-44 object-contain"
+            className={`${imgSizeClasses} object-contain`}
             referrerPolicy="no-referrer"
           />
           {/* Zoom Overlay Indicator */}
@@ -37,11 +56,11 @@ export default function Logo({ className = '', showText = true, light = false }:
 
         {/* Typography side of Logo */}
         {showText && (
-          <div className="flex flex-col select-none leading-tight font-sans">
-            <span className={`text-[18px] sm:text-[20px] md:text-[22px] font-black tracking-wider ${primaryColor} uppercase`}>
+          <div className="flex flex-col select-none leading-tight font-sans min-w-0">
+            <span className={`font-black uppercase ${titleTextClasses} ${primaryColor}`}>
               MORAINE GO TOURS
             </span>
-            <span className="text-[9px] sm:text-[10px] md:text-[11px] font-bold text-gray-500 tracking-[0.16em] uppercase mt-1">
+            <span className={`font-bold text-gray-500 uppercase mt-1 ${subtitleTextClasses}`}>
               BANFF • LAKE LOUISE • MORAINE LAKE
             </span>
           </div>

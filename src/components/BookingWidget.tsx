@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, ArrowRight, CheckCircle, Ticket, Route, MessageSquare, Printer, RefreshCw, Sparkles } from 'lucide-react';
+import { Calendar, Users, ArrowRight, CheckCircle, Ticket, Route, MessageSquare, Printer, RefreshCw, Sparkles, Lock, CreditCard, Shield, AlertCircle, Check } from 'lucide-react';
 import { SHUTTLE_ROUTES } from '../data';
 import { Booking } from '../types';
 
@@ -36,8 +36,19 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
   const [passengerName, setPassengerName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [pickupAddress, setPickupAddress] = useState('135 Beaver St');
+  const [postalCode, setPostalCode] = useState('T1L 1A1');
   const [validationError, setValidationError] = useState('');
   
+  // Interactive Payments states
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [paymentInfo, setPaymentInfo] = useState<{ transactionId: string; mode: string; notes?: string } | null>(null);
+
   // Confirmed booking state
   const [activeBooking, setActiveBooking] = useState<Booking | null>(null);
 
@@ -86,7 +97,7 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
     setStep(2);
   };
 
-  // Handle step completion
+  // Handle step completion (Step 2 inputs validation -> moves to payment Step 3)
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 2) {
@@ -96,9 +107,75 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
       }
       
       setValidationError("");
+      setCardName(passengerName); // Auto-populate cardholder with lead traveler
+      setStep(3); // Advance to Secure Payment Form
+    }
+  };
+
+  // Process secure payment transaction through banking API
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cardName.trim() || !cardNumber.trim() || !cardExpiry.trim() || !cardCvc.trim()) {
+      setPaymentError("Please complete all credit card information to capture funds.");
+      return;
+    }
+
+    const cleanNum = cardNumber.replace(/\s+/g, '');
+    if (cleanNum.length < 13 || cleanNum.length > 19) {
+      setPaymentError("Invalid card number. Please provide a standard credit card number.");
+      return;
+    }
+
+    if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+      setPaymentError("Card Expiry date format must be MM/YY.");
+      return;
+    }
+
+    if (cardCvc.length < 3 || cardCvc.length > 4) {
+      setPaymentError("CVC security code must be 3 or 4 digits.");
+      return;
+    }
+
+    setPaymentLoading(true);
+    setPaymentError('');
+
+    try {
+      const response = await fetch('/api/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: totalPrice,
+          passengerName,
+          email,
+          cardName,
+          bookingDetails: {
+            routeId: selectedRoute.id,
+            source: selectedRoute.source,
+            destination: selectedRoute.destination,
+            tripType,
+            passengers,
+            travelDate,
+            timeSlot,
+            phone,
+          }
+        })
+      });
+
+      const resData = await response.json();
+      if (!response.ok || !resData.success) {
+        throw new Error(resData.error || 'Server rejected checkout handshake. Please check keys.');
+      }
+
+      setPaymentInfo({
+        transactionId: resData.transactionId,
+        mode: resData.mode,
+        notes: resData.notes
+      });
+
+      // Payment captured, commit booking
       const code = `MG-${Math.floor(1000 + Math.random() * 9000)}-2026`;
       const newBooking: Booking = {
-        id: Math.random().toString(),
+        id: resData.transactionId || Math.random().toString(),
         routeId: selectedRoute.id,
         source: selectedRoute.source,
         destination: selectedRoute.destination,
@@ -111,6 +188,8 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
         passengerName,
         email,
         phone,
+        pickupAddress,
+        postalCode,
         totalPrice,
         bookingCode: code,
         createdAt: new Date().toISOString()
@@ -121,9 +200,15 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
       } catch (err) {
         console.warn("Storage writing failed:", err);
       }
+
       setActiveBooking(newBooking);
       onBookingSuccess(newBooking);
-      setStep(3);
+      setStep(4); // Display official paid boarding ticket
+    } catch (err: any) {
+      console.error("Secure payment submission error:", err);
+      setPaymentError(err?.message || "SSL Transaction failure. Please verify card credentials or gateway settings.");
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -134,12 +219,20 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
     setPassengerName('');
     setEmail('');
     setPhone('');
+    setPickupAddress('135 Beaver St');
+    setPostalCode('T1L 1A1');
+    setCardName('');
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCvc('');
+    setPaymentInfo(null);
+    setPaymentError('');
   };
 
   // Render tickets boarding pass
-  if (activeBooking || step === 3) {
-    const bookingToShow = activeBooking || (step === 3 ? {
-      id: 'preview',
+  if (activeBooking || step === 4) {
+    const bookingToShow = activeBooking || (step === 4 ? {
+      id: paymentInfo?.transactionId || 'PREVIEW',
       routeId: selectedRouteId,
       source: selectedRoute.source,
       destination: selectedRoute.destination,
@@ -152,6 +245,8 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
       passengerName,
       email,
       phone,
+      pickupAddress,
+      postalCode,
       totalPrice,
       bookingCode: 'MG-PREV-2026',
       createdAt: new Date().toISOString()
@@ -234,6 +329,15 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
                   <p className="font-bold text-gray-800">{bookingToShow?.passengers} adult seats</p>
                 </div>
 
+                {bookingToShow?.pickupAddress && (
+                  <div className="col-span-2 bg-[#077B8A]/5 p-2 rounded border border-[#077B8A]/10 mt-0.5">
+                    <p className="text-[10px] text-brand-cyan font-bold uppercase tracking-wider">📍 Banff Pick-Up Location</p>
+                    <p className="text-xs text-gray-800 font-bold">
+                      {bookingToShow.pickupAddress}, Banff, AB, {bookingToShow.postalCode || 'T1L 1A1'}
+                    </p>
+                  </div>
+                )}
+
                 {bookingToShow?.tripType === 'round-trip' && (
                   <div className="col-span-2 bg-[#077B8A]/5 p-2 rounded border border-[#077B8A]/10 mt-1">
                     <p className="text-[10px] text-brand-cyan font-bold uppercase tracking-wider">
@@ -283,7 +387,7 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
             Pick-up Instructions &amp; Safe Boarding
           </p>
           <ul className="list-disc list-inside flex flex-col gap-1 text-gray-600">
-            <li><strong>Banff Hub Location</strong>: Banff Park &amp; Ride (Trans-Canada Hwy) or Fairmont Banff Springs.</li>
+            <li><strong>Banff Hub Location</strong>: {bookingToShow?.pickupAddress || '135 Beaver St'}, Postal Code {bookingToShow?.postalCode || 'T1L 1A1'} (Main Moraine Go Shuttle Station).</li>
             <li><strong>Be Punctual</strong>: Arrive exactly <strong>10 minutes</strong> before your selected time slot ({bookingToShow?.timeSlot}).</li>
             <li><strong>Gear Allowed</strong>: Unlimited rucksacks, photography tripods, hiking sticks and fold-down pram strollers.</li>
             <li><strong>Contact Help</strong>: Call <strong>437-868-2108</strong> if you need to coordinate or re-schedule.</li>
@@ -319,16 +423,19 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
 
       {/* Step Indicators */}
       <div className="flex border-b border-gray-100 text-xs font-semibold select-none bg-slate-50/50">
-        <div className={`flex-1 py-3 text-center border-r border-gray-150 ${step === 1 ? 'bg-white text-brand-cyan border-b-2 border-b-brand-cyan' : 'text-gray-400'}`}>
-          1. Select Route &amp; Times
+        <div className={`flex-1 py-3 text-center border-r border-gray-150 text-[10px] md:text-xs ${step === 1 ? 'bg-white text-brand-cyan border-b-2 border-b-brand-cyan font-extrabold' : 'text-gray-400'}`}>
+          1. Shuttle &amp; Times
         </div>
-        <div className={`flex-1 py-3 text-center ${step === 2 ? 'bg-white text-brand-cyan border-b-2 border-b-brand-cyan' : 'text-gray-400'}`}>
+        <div className={`flex-1 py-3 text-center border-r border-gray-150 text-[10px] md:text-xs ${step === 2 ? 'bg-white text-brand-cyan border-b-2 border-b-brand-cyan font-extrabold' : 'text-gray-400'}`}>
           2. Traveler Details
+        </div>
+        <div className={`flex-1 py-3 text-center text-[10px] md:text-xs ${step === 3 ? 'bg-white text-brand-cyan border-b-2 border-b-brand-cyan font-extrabold' : 'text-gray-400'}`}>
+          3. Secure Payment
         </div>
       </div>
 
       <form onSubmit={handleNextStep} className="p-6 flex flex-col gap-5">
-        {step === 1 ? (
+        {step === 1 && (
           <>
             {/* ROUTE SELECTOR */}
             <div>
@@ -408,7 +515,7 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
                   : 'Your ticket covers the complete round-trip journey to both lakes with guaranteed return. You will enjoy a dedicated 4.5-hour mountain excursion:'}
               </p>
               <div className="mt-3 grid grid-cols-2 gap-3 text-xs bg-white p-3 rounded-xl border border-gray-100">
-                <div className="border-r border-gray-100 pr-2">
+                <div className="border-r border-gray-150 pr-2">
                   <span className="text-[10px] text-gray-400 block uppercase font-bold tracking-wider">Departure Shuttle</span>
                   <span className="font-bold text-brand-blue text-sm block mt-0.5">{timeSlot}</span>
                   <span className="text-[9px] text-gray-500 block">
@@ -472,7 +579,9 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
               </button>
             </div>
           </>
-        ) : (
+        )}
+
+        {step === 2 && (
           <>
             {/* STEP 2: PASSENGER DETAILS FORM */}
             <div className="bg-slate-50 p-3 rounded-lg flex items-center justify-between text-xs border border-gray-200 text-gray-700">
@@ -530,6 +639,36 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
                 />
                 <span className="text-[9px] text-gray-400 mt-1 block">Required to deliver real-time shuttle delays or guide text updates during the tour.</span>
               </div>
+
+              <div className="grid grid-cols-2 gap-3.5 pt-1">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Banff Pick-Up Address</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 135 Beaver St"
+                    value={pickupAddress}
+                    onChange={(e) => setPickupAddress(e.target.value)}
+                    className="w-full bg-slate-50 border border-gray-200 p-2.5 text-xs rounded-lg text-gray-800 focus:outline mb-0.5 border-l-4 border-l-brand-cyan focus:outline-brand-cyan font-semibold"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Postal Code</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. T1L 1A1"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className="w-full bg-slate-50 border border-gray-200 p-2.5 text-xs rounded-lg text-gray-800 focus:outline mb-0.5 border-l-4 border-l-brand-cyan focus:outline-brand-cyan font-mono font-bold"
+                    required
+                  />
+                </div>
+                <div className="col-span-2">
+                  <span className="text-[9.5px] text-[#077B8A] bg-[#077B8A]/5 p-2 rounded border border-[#077B8A]/10 block font-semibold">
+                    📍 Centered Depot pre-selected: <strong>135 Beaver St, Banff (Postal: T1L 1A1)</strong>. Customize if staying elsewhere.
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* CONFIRMATION SUBMIT */}
@@ -545,11 +684,209 @@ export default function BookingWidget({ onBookingSuccess }: BookingWidgetProps) 
                 type="submit"
                 className="bg-brand-cyan hover:bg-[#066572] text-white font-bold text-xs py-3.5 px-6 rounded-xl flex items-center gap-2 transform transition active:scale-95 cursor-pointer uppercase shadow-md"
               >
-                Secure Ticket Booking
-                <Ticket className="w-4 h-4" />
+                Proceed to Secure Payment
+                <CreditCard className="w-4 h-4" />
               </button>
             </div>
           </>
+        )}
+
+        {step === 3 && (
+          <div className="flex flex-col gap-5">
+            {/* Payment Summary */}
+            <div className="bg-slate-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-700 flex flex-col gap-2">
+              <div className="flex justify-between border-b border-gray-200 pb-2">
+                <span className="font-semibold text-gray-500">Departure Connection:</span>
+                <span className="font-bold text-[#0D1B2A]">{selectedRoute.source} ⇄ {selectedRoute.destination}</span>
+              </div>
+              <div className="flex justify-between border-b border-gray-200 pb-2">
+                <span className="font-semibold text-gray-500">Travel Date &amp; Time:</span>
+                <span className="font-bold text-gray-800">{travelDate} @ {timeSlot}</span>
+              </div>
+              <div className="flex justify-between border-b border-gray-200 pb-2">
+                <span className="font-semibold text-gray-500">Traveler Details:</span>
+                <span className="font-bold text-gray-800">{passengerName} ({passengers} travelers)</span>
+              </div>
+              <div className="flex justify-between text-sm pt-1 font-extrabold text-[#0D1B2A]">
+                <span className="text-brand-cyan uppercase tracking-wider">Total Amount Due (CAD):</span>
+                <span className="text-brand-blue text-base">${totalPrice} CAD</span>
+              </div>
+            </div>
+
+            {/* Credit Card Interactive Preview Mockup */}
+            <div className="relative w-full rounded-2xl bg-gradient-to-tr from-[#0D1B2A] via-[#103058] to-[#1F4E79] p-5 text-white shadow-lg overflow-hidden border border-white/10 select-none">
+              <div className="absolute top-0 right-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-cyan-400/10 blur-xl"></div>
+              <div className="absolute bottom-0 left-0 -ml-6 -mb-6 w-32 h-32 rounded-full bg-brand-gold/10 blur-xl"></div>
+              
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex flex-col">
+                  <span className="font-serif text-[11px] font-bold tracking-widest text-brand-gold">MORAINE GO</span>
+                  <span className="text-[7px] text-gray-300 uppercase tracking-wide">Elite Shuttle Pass</span>
+                </div>
+                <div className="p-1 px-2.5 bg-white/10 rounded backdrop-blur text-[8px] font-mono text-cyan-300 tracking-widest flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> SECURE SSL TERMINAL
+                </div>
+              </div>
+
+              {/* Card Chip graphic and Card Indicator */}
+              <div className="flex justify-between items-center mb-5">
+                <div className="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-200 via-yellow-105 to-amber-300 border border-amber-400/20 relative overflow-hidden flex items-center justify-center">
+                  <div className="absolute inset-x-2.5 inset-y-1.5 border border-amber-600/25 rounded grid grid-cols-3 gap-0.5">
+                    <div className="border-r border-b border-amber-600/15"></div>
+                    <div className="border-r border-b border-amber-600/15"></div>
+                    <div className="border-b border-amber-600/15"></div>
+                  </div>
+                </div>
+                <div className="flex -space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-red-500/80"></div>
+                  <div className="w-5 h-5 rounded-full bg-yellow-500/80"></div>
+                </div>
+              </div>
+
+              {/* Card Number display with live formatting */}
+              <div className="font-mono text-base md:text-lg tracking-[0.2em] font-semibold text-center mb-4 transition duration-300">
+                {cardNumber.trim() || '•••• •••• •••• ••••'}
+              </div>
+
+              <div className="flex justify-between items-end text-xs uppercase">
+                <div className="flex flex-col gap-0.5 max-w-[70%]">
+                  <span className="text-[7px] text-slate-400 tracking-wider">Cardholder Name</span>
+                  <span className="font-bold font-sans tracking-wide truncate block">{cardName.toUpperCase() || 'LEAD TRAVELER'}</span>
+                </div>
+                <div className="flex flex-col gap-0.5 text-right">
+                  <span className="text-[7px] text-slate-400 tracking-wider">Expires</span>
+                  <span className="font-bold font-mono">{cardExpiry || 'MM/YY'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Input fields */}
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                  <CreditCard className="w-3.5 h-3.5 text-brand-cyan" />
+                  Credit Card Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="4111 2222 3333 4444"
+                  maxLength={19}
+                  value={cardNumber}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                    const matches = v.match(/\d{4,16}/g);
+                    const match = matches && matches[0] || '';
+                    const parts = [];
+
+                    for (let i=0, len=match.length; i<len; i+=4) {
+                      parts.push(match.substring(i, i+4));
+                    }
+
+                    if (parts.length > 0) {
+                      setCardNumber(parts.join(' '));
+                    } else {
+                      setCardNumber(v);
+                    }
+                  }}
+                  className="w-full bg-slate-50 border border-gray-200 p-2.5 text-xs rounded-lg text-gray-800 focus:outline focus:outline-brand-cyan font-mono"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wide mb-1">Expiration Date</label>
+                  <input
+                    type="text"
+                    placeholder="MM/YY"
+                    maxLength={5}
+                    value={cardExpiry}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      if (value.length === 2 && !value.includes('/') && !e.target.value.endsWith('/')) {
+                        value += '/';
+                      }
+                      setCardExpiry(value);
+                    }}
+                    className="w-full bg-slate-50 border border-gray-200 p-2.5 text-xs rounded-lg text-gray-800 focus:outline focus:outline-brand-cyan font-mono text-center"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wide mb-1 flex items-center justify-center gap-1">
+                    CVC Code
+                    <Lock className="w-2.5 h-2.5 text-slate-400" />
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="123"
+                    maxLength={4}
+                    value={cardCvc}
+                    onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-slate-50 border border-gray-200 p-2.5 text-xs rounded-lg text-gray-800 focus:outline focus:outline-brand-cyan font-mono text-center"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wide mb-1">Cardholder Name (Exactly as shown)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Liam MacDonald"
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  className="w-full bg-slate-50 border border-gray-200 p-2.5 text-xs rounded-lg text-gray-800 focus:outline focus:outline-brand-cyan"
+                  required
+                />
+              </div>
+            </div>
+
+            {paymentError && (
+              <div className="bg-rose-50 text-rose-800 text-xs p-3 rounded-lg border border-rose-100 font-semibold flex items-center gap-1.5 shadow-sm">
+                <span className="text-rose-500 font-extrabold">⚠</span> {paymentError}
+              </div>
+            )}
+
+            {/* Simulated environment badge/notice */}
+            <div className="bg-emerald-50/50 border border-emerald-100 rounded-lg p-3.5 text-[10.5px] text-[#0A3D1E] flex flex-col gap-1.5 shadow-sm">
+              <span className="font-extrabold flex items-center gap-1 text-emerald-800">
+                <Shield className="w-3.5 h-3.5 text-emerald-600" /> Secure Encryption Configured
+              </span>
+              <p className="leading-relaxed">
+                Stripe services are active in Sandbox/Simulation authorization mode. To connect the live financial gateway and receive real funds, register your <strong className="font-mono bg-emerald-100/60 px-1 rounded">STRIPE_SECRET_KEY</strong> in the AI Studio environment variables panel!
+              </p>
+            </div>
+
+            {/* CONTROLS */}
+            <div className="flex justify-between items-center pt-4 border-t border-gray-150">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="text-xs text-gray-500 font-bold hover:text-brand-cyan cursor-pointer"
+              >
+                ← Back to Details
+              </button>
+              <button
+                type="button"
+                onClick={handlePaymentSubmit}
+                disabled={paymentLoading}
+                className="bg-brand-gold hover:bg-brand-gold/90 text-[#0D1B2A] font-extrabold text-xs py-3.5 px-6 rounded-xl flex items-center gap-2 transform transition active:scale-95 cursor-pointer uppercase shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {paymentLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <span>Pay ${totalPrice} CAD Securely</span>
+                    <Lock className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         )}
       </form>
     </div>

@@ -17,5 +17,33 @@
   .text-glow {
     text-shadow: 0 2px 10px rgba(7, 123, 138, 0.2);
   }
+
+  .markdown-body ul {
+    list-style-type: disc;
+    margin-left: 1.25rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  .markdown-body ol {
+    list-style-type: decimal;
+    margin-left: 1.25rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  .markdown-body li {
+    margin-bottom: 0.25rem;
+  }
+  .markdown-body p {
+    margin-bottom: 0.5rem;
+  }
+  .markdown-body p:last-child {
+    margin-bottom: 0px;
+  }
+  .markdown-body strong {
+    font-weight: 700;
+  }
+  .markdown-body em {
+    font-style: italic;
+  }
 }
 

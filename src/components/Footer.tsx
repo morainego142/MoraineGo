@@ -2,15 +2,19 @@ import React from 'react';
 import { Phone, Mail, Clock, ShieldCheck, Compass, HelpCircle, Navigation2, Instagram } from 'lucide-react';
 import Logo from './Logo';
 
-export default function Footer() {
+interface FooterProps {
+  onAdminOpen?: () => void;
+}
+
+export default function Footer({ onAdminOpen }: FooterProps) {
   return (
     <footer className="bg-brand-dark text-white border-t border-white/10" id="contact">
       {/* Upper Footer section */}
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
         
         {/* Brand Information Column */}
         <div className="flex flex-col gap-4">
-          <Logo light showText />
+          <Logo light showText size="sm" />
           <p className="text-xs text-slate-400 font-sans leading-relaxed mt-2">
             Moraine Go provides premium, secure, and stress-free visual shuttle services connecting Banff, Lake Louise, and Moraine Lake in the majestic Canadian Rockies. Avoid closures and secure direct lakeshore access today.
           </p>
@@ -58,6 +62,16 @@ export default function Footer() {
             <li>
               <span className="text-slate-400">Parks Canada Pass Guide</span>
             </li>
+            {onAdminOpen && (
+              <li>
+                <button 
+                  onClick={onAdminOpen} 
+                  className="text-brand-gold hover:text-white transition font-bold flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 text-left outline-none"
+                >
+                  🔑 Operator Dispatch Desk
+                </button>
+              </li>
+            )}
           </ul>
         </div>
 
