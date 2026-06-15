@@ -57,6 +57,9 @@ export default function Footer({ onAdminOpen }: FooterProps) {
               <a href="#why-us" className="hover:text-brand-cyan transition">Why Choose Moraine Go</a>
             </li>
             <li>
+              <a href="#google-reviews" className="hover:text-brand-cyan transition font-bold text-brand-gold flex items-center gap-1">⭐ Google Guest Reviews</a>
+            </li>
+            <li>
               <a href="#booking-widget-root" className="hover:text-brand-cyan transition">Manage Active Reservation</a>
             </li>
             <li>

@@ -27,6 +27,209 @@ const getAiClient = () => {
   });
 };
 
+// High-Fidelity Local Knowledge Base for Offline & Error Fallback
+function getLocalFallbackResponse(userPrompt: string): string {
+  const query = userPrompt.toLowerCase().trim();
+
+  // 1. Pricing / Fares / Costs
+  if (
+    query.includes('price') || 
+    query.includes('cost') || 
+    query.includes('fare') || 
+    query.includes('fee') || 
+    query.includes('pay') || 
+    query.includes('charge') || 
+    query.includes('how much') || 
+    query.includes('dollar') || 
+    query.includes('cad')
+  ) {
+    return `🏔️ **Moraine Go Shuttle Fares & Pricing:**
+
+*   **Banff to Lake Louise & Moraine Lake Round-Trip:** **$105 CAD per seat**.
+*   **Children under 5:** Ride **free** of charge (please note safety seat requirements in booking notes).
+*   **What is included:** Guaranteed boarding for your specific same-day departure and scheduled return **4.5 hours later**, giving you easy commercial access to the restricted lakes.
+
+You can calculate custom passenger totals and reserve your boarding passes instantly using the **Reservation Widget** on our homepage!`;
+  }
+
+  // 2. Schedule / Times / Hours / When
+  if (
+    query.includes('schedule') || 
+    query.includes('time') || 
+    query.includes('clock') || 
+    query.includes('hour') || 
+    query.includes('when') || 
+    query.includes('departure') || 
+    query.includes('return') || 
+    query.includes('slots')
+  ) {
+    return `🕒 **Shuttle Departures & Excursion Schedule:**
+
+We operate multiple departure blocks daily boarding from Banff:
+*   **Morning Cycles:** 07:00 AM, 08:00 AM, and 09:00 AM
+*   **Afternoon Cycles:** 01:00 PM and 02:00 PM
+
+**Important Note:** Your booking is structured as a **same-day round-trip**. Your returning shuttle back to Banff is scheduled automatically exactly **4.5 hours after departure**, which is the perfect amount of time to marvel at both Lake Louise and Moraine Lake!`;
+  }
+
+  // 3. Road Closed / Drive / Personal cars / Private cars / Access / Parking
+  if (
+    query.includes('closed') || 
+    query.includes('drive') || 
+    query.includes('car') || 
+    query.includes('vehicle') || 
+    query.includes('road') || 
+    query.includes('parking') || 
+    query.includes('access') ||
+    query.includes('permit')
+  ) {
+    return `🚧 **Moraine Lake Road Access & Closures:**
+
+Parks Canada has strictly **closed Moraine Lake Road to all personal/private vehicles**. 
+
+*   Trying to park at Lake Louise or Moraine Lake is extremely difficult due to early morning lockouts and highly restricted parking spaces.
+*   The easiest, stress-free route is to secure a seat on our comfortable **Moraine Go Round-Trip shuttle ($105 CAD)** which picks you up centrally in Banff and takes you straight past the closure barriers!`;
+  }
+
+  // 4. Hikes / Trails / Sentinel / Larch / Agnes / Teahouse / Peaks / Things to do
+  if (
+    query.includes('hike') || 
+    query.includes('trail') || 
+    query.includes('walk') || 
+    query.includes('sentinel') || 
+    query.includes('larch') || 
+    query.includes('agnes') || 
+    query.includes('teahouse') || 
+    query.includes('glacier') || 
+    query.includes('mountain') || 
+    query.includes('peak') ||
+    query.includes('view') ||
+    query.includes('scenic')
+  ) {
+    return `🥾 **Recommended Rockies Hiking Trails:**
+
+Banff National Park offers some of the most spectacular hikes in the world! Depending on your shuttle sector:
+
+*   **Near Moraine Lake:**
+    *   **The Rockpile Trail (Easy):** A short crawl to the famous direct vantage point overlooking the pristine turquoise water.
+    *   **Larch Valley & Sentinel Pass (Moderate to Hard):** Wind through giant golden larch trees beneath the shadows of Mount Temple.
+*   **Near Lake Louise:**
+    *   **Lake Agnes Teahouse (Moderate):** A beautiful 3.5 km trail heading past Mirror Lake to a functioning peakside teahouse!
+    *   **Plain of Six Glaciers (Moderate):** Spectacular views of active mountain glacier faces.
+
+Please dress in warm layers, bring lots of water, and carry bear spray!`;
+  }
+
+  // 5. Parks Pass / Park Pass
+  if (
+    query.includes('pass') || 
+    query.includes('parks pass') || 
+    query.includes('park pass') || 
+    query.includes('national park pass')
+  ) {
+    return `🎟️ **Parks Canada Park Passes:**
+
+Yes, **all visitors** entering Banff National Park must hold a valid **Parks Canada National Park Pass**. 
+
+*   You can purchase a daily pass or an annual Discovery Pass either online from the Parks Canada official website or at the park gates upon arrival in the Rockies.
+*   *Please note: National Park passes are administered independently by Parks Canada and are NOT included in your Moraine Go commercial shuttle tickets!*`;
+  }
+
+  // 6. Bear / Wildlife / Safety / Grizzly
+  if (
+    query.includes('bear') || 
+    query.includes('grizzly') || 
+    query.includes('wildlife') || 
+    query.includes('safety') || 
+    query.includes('dangerous') || 
+    query.includes('animal') || 
+    query.includes('elk')
+  ) {
+    return `🐻 **Rockies Wildlife & Bear Safety:**
+
+Banff is home to rich wildlife, including Grizzly Bears, Black Bears, Elk, and Bighorn Sheep! To explore safely:
+*   Always travel in groups and make clear noise (talking, singing) on the forest trails.
+*   **Carry Bear Spray** in a quick-access chest/waist harness (not inside your backpack) and make sure you know how to operate it.
+*   Maintain safe distances at all times: at least **100 meters** (10 school buses) from bears, and **30 meters** from elk and deer.`;
+  }
+
+  // 7. Pick up / Location / Central / Where to board / Hotel / Address / Beaver
+  if (
+    query.includes('pick') || 
+    query.includes('up') || 
+    query.includes('where') || 
+    query.includes('board') || 
+    query.includes('location') || 
+    query.includes('beaver') || 
+    query.includes('address') || 
+    query.includes('start') || 
+    query.includes('leave')
+  ) {
+    return `📍 **Boarding & Central Pick-Up Location:**
+
+All of our passenger shuttles board and depart from our central shuttle hub in downtown Banff:
+*   **Address:** **135 Beaver St, Banff, AB, T1L 1A1**
+*   **Boarding Instructions:** Please arrive at least **15 minutes** prior to your booked departure time block. Have your receipt code or email boarding pass ready on your phone so our drivers can check you in quickly!`;
+  }
+
+  // 8. Contact / Phone / Email / Call / Support / Number
+  if (
+    query.includes('contact') || 
+    query.includes('phone') || 
+    query.includes('email') || 
+    query.includes('call') || 
+    query.includes('support') || 
+    query.includes('number') || 
+    query.includes('helpDesk') || 
+    query.includes('write') || 
+    query.includes('reach') ||
+    query.includes('book')
+  ) {
+    return `📞 **Moraine Go Contact Information:**
+
+If you need help reservation updates, changes, group packages, or active rider support:
+*   **Call Reservation Desk:** **437-868-2108**
+*   **General Support Email:** **morainego142@gmail.com**
+*   **Online Reservations:** Simply scroll to our interactive **Reservation Widget** on the webpage to check seat availability in real-time and secure your boarding pass instant-sale!`;
+  }
+
+  // 9. Greetings / Hello / Hi / Hey / Welcome / Help
+  if (
+    query.includes('hello') || 
+    query.includes('hi') || 
+    query.includes('hey') || 
+    query.includes('greetings') || 
+    query.includes('welcome') || 
+    query.includes('help') || 
+    query.includes('how can you') || 
+    query.includes('assistant') || 
+    query.includes('advisor')
+  ) {
+    return `🏔️ **Welcome! I am your Moraine Go Rockies AI Concierge.**
+
+How can I help you plan your journey today? Here are some popular things you can ask me:
+*   *"How much does the round-trip ticket cost?"*
+*   *"What is the shuttle departure schedule?"*
+*   *"What hikes do you recommend around Lake Louise?"*
+*   *"Can I drive my own car to Moraine Lake?"*
+*   *"How do I contact customer support?"*
+
+Feel free to ask a question, or use our **Reservation Widget** on the page to secure your slot directly!`;
+  }
+
+  // 10. Default / fallback
+  return `🏔️ **Moraine Go Rockies Advisor:**
+
+Thank you for your question! To help you coordinate your Banff National Park trip, here are the most important details:
+
+*   **Excursions:** We run a **round-trip Double-Lake tour (Lake Louise & Moraine Lake)** from downtown Banff for **$105 CAD per seat** (Children under 5 ride free!).
+*   **Schedule Blocks:** Departures run daily at **07:00 AM, 08:00 AM, 09:00 AM, 01:00 PM, and 02:00 PM**.
+*   **Road Access Alert:** Please recall that Moraine Lake Road is strictly closed to private vehicles.
+*   **Central Boarding:** We pick you up right in Banff at **135 Beaver St**.
+
+You can reserve your seat instantly using our secure **Reservation Widget** on this page. Let me know if you would like trekking suggestions (such as Lake Agnes or Rockpile trails), park pass advice, or contact details!`;
+}
+
 app.use(express.json());
 
 // API endpoints
@@ -37,10 +240,15 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Invalid messages body' });
     }
 
+    const userMessages = messages.filter(m => m.role === 'user');
+    const lastUserPrompt = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : '';
+
     const ai = getAiClient();
     if (!ai) {
+      // Intelligently reply to the user's specific query using local knowledge base if Gemini Key is missing
+      const localReply = getLocalFallbackResponse(lastUserPrompt);
       return res.json({
-        output: "Welcome! The Moraine Go AI Concierge is currently running in offline preview mode (Gemini Key not configured). You can still use our booking portal above to calculate your fares and secure your tickets instantly!"
+        output: localReply
       });
     }
 
@@ -97,8 +305,18 @@ Always stay warm, professional, and clear. Suggest users book their shuttles usi
 
     res.json({ output: response.text });
   } catch (err: any) {
-    console.error("Gemini Error:", err);
-    res.status(500).json({ error: err.message || 'Error communicating with Gemini model' });
+    console.error("Gemini Error, falling back to local advisor knowledge card:", err);
+    try {
+      const { messages } = req.body;
+      const userMessages = (messages || []).filter((m: any) => m.role === 'user');
+      const lastUserPrompt = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : '';
+      const localReply = getLocalFallbackResponse(lastUserPrompt);
+      return res.json({ output: localReply });
+    } catch (fallbackErr) {
+      return res.json({ 
+        output: "🏔️ **Moraine Go Rockies Shuttle Concierge:**\n\nThanks for your query! We operate premium double-lake shuttle packages departing central Banff daily at **07:00 AM, 08:00 AM, 09:00 AM, 1:00 PM, and 2:00 PM** for **$105 CAD round-trip**.\n\nPlease secure your tickets using the **Reservation Widget** on the homepage, or feel free to call us at **437-868-2108** for reservations!" 
+      });
+    }
   }
 });
 
