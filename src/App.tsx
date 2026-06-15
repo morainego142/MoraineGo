@@ -24,6 +24,7 @@ export default function App() {
   const [showReviewGateway, setShowReviewGateway] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+      const pathname = window.location.pathname.toLowerCase();
       return (
         params.has('greview') || 
         params.has('review') || 
@@ -31,7 +32,13 @@ export default function App() {
         params.has('reviwes') || 
         params.has('qr_scan') ||
         window.location.hash === '#write-review' ||
-        window.location.hash === '#greview'
+        window.location.hash === '#greview' ||
+        pathname === '/greview' ||
+        pathname === '/review' ||
+        pathname === '/reviews' ||
+        pathname === '/reviwes' ||
+        pathname.startsWith('/greview') ||
+        pathname.startsWith('/review')
       );
     }
     return false;

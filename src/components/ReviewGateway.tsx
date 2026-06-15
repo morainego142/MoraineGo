@@ -66,14 +66,28 @@ export default function ReviewGateway({
         setRedirectCountdown((prev) => prev - 1);
       }, 1000);
     } else if (isRedirecting && redirectCountdown === 0) {
-      // Trigger redirect to official Google Review URL!
-      window.open(googleReviewUrl, '_blank', 'noopener,noreferrer');
+      // Trigger redirect to official Google Review URL safely in a new tab!
+      try {
+        window.open(googleReviewUrl, '_blank', 'noopener,noreferrer');
+      } catch (innerErr) {
+        console.warn('Blockable popup encountered:', innerErr);
+      }
+      
       // Show troubleshooting/diagnostics automatically if blocked or stuck on this page
       setShowDiagnostics(true);
-      // Also fallback window location just in case popups are blocked
-      setTimeout(() => {
-        window.location.href = googleReviewUrl;
-      }, 200);
+      
+      // ONLY change window location if we are NOT running in an iframe layout
+      // on Google AI Studio or mobile sandboxes to prevent X-Frame-Options SAMEORIGIN crashes!
+      const isIframe = typeof window !== 'undefined' && (window.self !== window.top || window.location.hostname.includes('run.app'));
+      if (!isIframe) {
+        setTimeout(() => {
+          try {
+            window.location.href = googleReviewUrl;
+          } catch (navErr) {
+            console.error('Navigation error:', navErr);
+          }
+        }, 200);
+      }
     }
     return () => clearInterval(interval);
   }, [isRedirecting, redirectCountdown, googleReviewUrl]);
@@ -85,8 +99,20 @@ export default function ReviewGateway({
   };
 
   const skipToGoogle = () => {
-    window.open(googleReviewUrl, '_blank', 'noopener,noreferrer');
-    window.location.href = googleReviewUrl;
+    try {
+      window.open(googleReviewUrl, '_blank', 'noopener,noreferrer');
+    } catch (innerErr) {
+      console.warn('Popup blocked:', innerErr);
+    }
+    
+    const isIframe = typeof window !== 'undefined' && (window.self !== window.top || window.location.hostname.includes('run.app'));
+    if (!isIframe) {
+      try {
+        window.location.href = googleReviewUrl;
+      } catch (navErr) {
+        console.error('Frame navigation blocked:', navErr);
+      }
+    }
   };
 
   const handleCopyLink = () => {
@@ -298,11 +324,20 @@ export default function ReviewGateway({
                     </button>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-slate-255 text-[9.5px] text-gray-500 font-sans">
-                    <strong className="text-gray-700 block mb-0.5">Direct Target URL:</strong>
-                    <span className="font-mono break-all text-[9px] select-all bg-white p-1.5 rounded-lg border border-gray-150 block text-gray-600 leading-snug">
-                      {googleReviewUrl}
-                    </span>
+                  <div className="mt-3 pt-2.5 border-t border-slate-200 text-[9.5px] text-gray-500 font-sans">
+                    <strong className="text-gray-700 block mb-1">Direct Target URL:</strong>
+                    <a 
+                      href={googleReviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono break-all text-[9.5px] select-all bg-[#077B8A]/5 hover:bg-[#077B8A]/10 text-[#077B8A] hover:text-[#066572] p-2.5 rounded-xl border border-[#077B8A]/15 block leading-relaxed font-bold flex items-center justify-between gap-2.5 transition active:scale-[0.99]"
+                      title="Click directly to open this Google review link"
+                    >
+                      <span className="truncate flex-1">{googleReviewUrl}</span>
+                      <span className="shrink-0 text-[10px] font-sans font-extrabold uppercase bg-[#077B8A] hover:bg-[#066572] text-white px-2 py-0.5 rounded-lg tracking-wide shadow-xs flex items-center gap-0.5">
+                        Open Link ↗
+                      </span>
+                    </a>
                   </div>
                 </div>
               )}

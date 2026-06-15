@@ -5,6 +5,16 @@ import {
 } from 'lucide-react';
 import QRCode from 'qrcode';
 
+// Helper to guarantee a link has absolute URL protocols (e.g. https://) to avoid relative path 404 errors
+const ensureAbsoluteUrl = (url: string): string => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^(https?:)?\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
 interface Review {
   id: string;
   author: string;
@@ -58,12 +68,15 @@ export default function ReviewsConsole() {
     return 'https://ais-pre-5md3jrkuliqm6yh34rsgii-795749998858.us-east1.run.app/?greview=true';
   });
 
-  // Dynamically compute the active reviewUrl for QR rendering
+  // Dynamically compute the active reviewUrl for QR rendering with safety protocol formatting
+  const safePublicWebsiteUrl = ensureAbsoluteUrl(publicWebsiteUrl);
+  const safeDirectGoogleUrl = ensureAbsoluteUrl(directGoogleUrl);
+
   const reviewUrl = qrMode === 'website_public' 
-    ? publicWebsiteUrl 
+    ? safePublicWebsiteUrl 
     : qrMode === 'direct' 
-    ? directGoogleUrl 
-    : `${sandboxUrl}&target=${encodeURIComponent(directGoogleUrl)}`;
+    ? safeDirectGoogleUrl 
+    : `${sandboxUrl}&target=${encodeURIComponent(safeDirectGoogleUrl)}`;
 
   // Persist URL/Mode updates to localStorage
   useEffect(() => {
@@ -634,9 +647,16 @@ export default function ReviewsConsole() {
                 {/* DYNAMIC URL INPUT FIELDS */}
                 {qrMode === 'website_public' && (
                   <div className="space-y-1.5 animate-fadeIn">
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center justify-between">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center justify-between select-none">
                       <span>Your Official Website Domain URL</span>
-                      <span className="text-[10px] text-[#077B8A] font-bold">Safe for all phones</span>
+                      <a 
+                        href={safePublicWebsiteUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-[#077B8A] hover:text-[#066572] font-bold flex items-center gap-0.5 hover:underline decoration-2"
+                      >
+                        Open Website Link ↗
+                      </a>
                     </label>
                     <input
                       type="url"
@@ -653,9 +673,16 @@ export default function ReviewsConsole() {
 
                 {qrMode === 'direct' && (
                   <div className="space-y-1.5 animate-fadeIn">
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center justify-between">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center justify-between select-none">
                       <span>Google maps business short-link</span>
-                      <span className="text-[10px] text-[#077B8A] font-bold">100% Public Access</span>
+                      <a 
+                        href={safeDirectGoogleUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-[#077B8A] hover:text-[#066572] font-bold flex items-center gap-0.5 hover:underline decoration-2"
+                      >
+                        Open Google Maps Link ↗
+                      </a>
                     </label>
                     <input
                       type="url"
@@ -672,18 +699,37 @@ export default function ReviewsConsole() {
 
                 {qrMode === 'sandbox' && (
                   <div className="space-y-1.5 animate-fadeIn">
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">
-                      Your Draft Sandbox URL (Local Dev Link)
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center justify-between select-none">
+                      <span>Your Draft Sandbox URL (Local Dev Link)</span>
+                      <a 
+                        href={`${sandboxUrl}&target=${encodeURIComponent(safeDirectGoogleUrl)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-[#077B8A] hover:text-[#066572] font-bold flex items-center gap-0.5 hover:underline decoration-2"
+                      >
+                        Open Sandbox Website ↗
+                      </a>
                     </label>
-                    <input
-                      type="text"
-                      disabled
-                      value={sandboxUrl}
-                      className="w-full bg-slate-100 border border-gray-200 p-3 text-xs rounded-xl font-mono text-gray-500 cursor-not-allowed"
-                    />
+                    
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        disabled
+                        value={`${sandboxUrl}&target=${encodeURIComponent(safeDirectGoogleUrl)}`}
+                        className="w-full bg-slate-100 border border-gray-200 p-3 pr-24 text-[11px] rounded-xl font-mono text-gray-500 cursor-not-allowed select-all"
+                      />
+                      <a 
+                        href={`${sandboxUrl}&target=${encodeURIComponent(safeDirectGoogleUrl)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="absolute right-1.5 bg-[#077B8A] hover:bg-[#066572] text-[10px] text-white font-extrabold uppercase py-2 px-3 rounded-lg transition-all"
+                      >
+                        Click Link ↗
+                      </a>
+                    </div>
                     
                     {/* CRITICAL LOUD WARNING DESIGN TO SOLVE THE 403 ERROR EXPLAINED BY THE USER */}
-                    <div className="bg-emerald-50 border-2 border-emerald-250 p-4 rounded-2xl text-[11px] text-emerald-950 leading-relaxed font-sans">
+                    <div className="bg-emerald-50 border-2 border-emerald-250 p-4 rounded-2xl text-[11px] text-emerald-950 leading-relaxed font-sans mt-2">
                       <div className="flex items-center gap-2 text-emerald-850 font-extrabold uppercase text-[10px] tracking-wider mb-1.5">
                         <span className="text-sm">⚡</span> SCANNERS FIXED: NO MORE 403 ERRORS!
                       </div>
@@ -754,35 +800,52 @@ export default function ReviewsConsole() {
               </div>
 
               {/* Utility actions */}
-              <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={handleCopyLink}
-                  id="btn-copy-review-link"
-                  className="bg-slate-50 hover:bg-slate-100 text-gray-700 border border-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 flex-1 justify-center whitespace-nowrap"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-4 h-4 text-emerald-500" /> Link Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 text-gray-400" /> Copy Web Review Link
-                    </>
-                  )}
-                </button>
+              <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col gap-3 font-sans">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {/* Clickable Test Link Link/Button */}
+                  <a
+                    href={reviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-[#077B8A] hover:bg-[#066572] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 justify-center flex-1 text-center shadow-sm whitespace-nowrap cursor-pointer select-none"
+                    title="Click here to open and test the configured destination URL in a new browser tab instantly"
+                  >
+                    <ExternalLink className="w-4 h-4 text-white" /> Open &amp; Test URL ↗
+                  </a>
+
+                  <button
+                    onClick={handleCopyLink}
+                    id="btn-copy-review-link"
+                    className="bg-slate-50 hover:bg-slate-100 text-gray-700 border border-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 flex-1 justify-center whitespace-nowrap select-none"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-500" /> Link Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 text-gray-400" /> Copy Web Review Link
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setQrMode('website_public');
+                      setPublicWebsiteUrl('https://morainego.ca/?greview=true');
+                      setDirectGoogleUrl('https://www.google.com/maps/search/?api=1&query=Moraine+Go+Tours+Banff+Shuttle');
+                    }}
+                    id="btn-reset-review-url"
+                    className="border border-slate-205 text-slate-400 p-2.5 rounded-xl hover:text-[#0D1B2A] hover:bg-slate-50 transition cursor-pointer shrink-0"
+                    title="Reset QR Link domains to default"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
                 
-                <button
-                  onClick={() => {
-                    setQrMode('website_public');
-                    setPublicWebsiteUrl('https://morainego.ca/?greview=true');
-                    setDirectGoogleUrl('https://www.google.com/maps/search/?api=1&query=Moraine+Go+Tours+Banff+Shuttle');
-                  }}
-                  id="btn-reset-review-url"
-                  className="border border-slate-200 text-slate-400 p-2.5 rounded-xl hover:text-[#0D1B2A] hover:bg-slate-50 transition cursor-pointer"
-                  title="Reset QR Link domains to default"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
+                <div className="text-[10px] text-gray-400 leading-normal font-medium bg-slate-50 border border-slate-150 p-2.5 rounded-xl mt-1">
+                  💡 **Tip (No manual typing required):** QR codes encode complete paths with parameters. Do not try to type long URLs on your phone! Simply click the teal **&ldquo;Open &amp; Test URL ↗&rdquo;** button above or click the blue link next to each input to open them instantly.
+                </div>
               </div>
 
             </div>
