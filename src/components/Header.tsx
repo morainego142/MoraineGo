@@ -156,9 +156,9 @@ export default function Header({ onBookClick, onConciergeClick }: HeaderProps) {
 
           {/* Social Icons, Language, Quick links */}
           <div className="flex items-center gap-4 flex-wrap">
-            <a href="https://instagram.com/moraine_go" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-gray-300 hover:text-[#E1306C] md:hover:text-cyan-400 transition duration-200">
+            <a href="https://instagram.com/morainelego" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-gray-300 hover:text-[#E1306C] md:hover:text-cyan-400 transition duration-200">
               <Instagram className="w-3.5 h-3.5 text-cyan-400" />
-              <span>@moraine_go</span>
+              <span>@morainelego</span>
             </a>
             <span className="text-white/10">|</span>
             {/* Currency switcher CAD / USD */}
@@ -388,9 +388,9 @@ export default function Header({ onBookClick, onConciergeClick }: HeaderProps) {
                   <Mail className="w-4 h-4 text-cyan-500 flex-shrink-0" />
                   <span className="truncate">Email: <strong className="text-gray-900 font-extrabold break-all">MoraineGo142@gmail.com</strong></span>
                 </div>
-                <a href="https://instagram.com/moraine_go" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 py-2.5 px-3 bg-gray-50 rounded-lg text-xs text-gray-700 mt-2 hover:bg-slate-100 transition duration-150">
+                <a href="https://instagram.com/morainelego" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 py-2.5 px-3 bg-gray-50 rounded-lg text-xs text-gray-700 mt-2 hover:bg-slate-100 transition duration-150">
                   <Instagram className="w-4 h-4 text-[#E1306C] flex-shrink-0" />
-                  <span className="truncate">Instagram: <strong className="text-gray-900 font-extrabold">@moraine_go</strong></span>
+                  <span className="truncate">Instagram: <strong className="text-gray-900 font-extrabold">@morainelego</strong></span>
                 </a>
               </div>
 

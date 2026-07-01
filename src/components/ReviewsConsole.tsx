@@ -92,6 +92,60 @@ export default function ReviewsConsole() {
   const [activeTab, setActiveTab] = useState<'reviews' | 'qr'>('reviews');
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   
+  // Custom states for widget script display
+  const [showWidgetCode, setShowWidgetCode] = useState(false);
+  const [copiedWidget, setCopiedWidget] = useState(false);
+
+  const getWidgetCode = () => {
+    return `<!-- Moraine Go Reviews Gateway Widget -->
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const isGreview = params.has('greview') || params.has('review') || window.location.hash === '#greview';
+  if (isGreview) {
+    const targetUrl = "${safeDirectGoogleUrl}";
+    const overlay = document.createElement('div');
+    overlay.id = 'greview-widget-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(13,27,42,0.96);z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px;backdrop-filter:blur(8px);box-sizing:border-box;';
+    overlay.innerHTML = \`
+      <div style="background:#ffffff;border-radius:28px;width:100%;max-width:420px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);overflow:hidden;border:1px solid rgba(255,255,255,0.1);text-align:center;animation:fadeIn 0.3s ease-out;box-sizing:border-box;">
+        <div style="background:linear-gradient(135deg, #0D1B2A, #077B8A);padding:26px 20px;color:#ffffff;position:relative;box-sizing:border-box;">
+          <button onclick="document.getElementById('greview-widget-overlay').remove()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:#ffffff;font-size:14px;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;transition:all 0.2s;">✕</button>
+          <div style="font-size:10px;font-weight:900;letter-spacing:0.25em;color:#C5A059;margin-bottom:6px;text-transform:uppercase;">\${"${businessName.toUpperCase()}"}</div>
+          <div style="font-size:19px;font-weight:900;letter-spacing:-0.01em;">Welcome Back, Traveler!</div>
+          <div style="font-size:11px;color:#ccfbf1;margin-top:4px;">Thank you for riding our premium Rockies shuttle today.</div>
+        </div>
+        <div style="padding:28px 24px;box-sizing:border-box;">
+          <div style="font-size:32px;margin-bottom:12px;display:inline-block;animation:pulse 2s infinite;">❤️</div>
+          <div style="font-weight:800;font-size:16px;color:#0D1B2A;margin-bottom:8px;">How was your journey today?</div>
+          <div style="font-size:12.5px;color:#4b5563;line-height:1.5;margin-bottom:24px;max-width:320px;margin-left:auto;margin-right:auto;">Our professional mountain drivers always strive for a perfect 5-star experience. Tap your rating below to write a quick review:</div>
+          <div style="display:flex;justify-content:center;gap:10px;margin-bottom:24px;">
+            \${[1,2,3,4,5].map(star => \`
+              <button onclick="window.open('\${targetUrl}', '_blank', 'noopener,noreferrer');document.getElementById('greview-widget-overlay').remove();" style="background:none;border:none;font-size:36px;cursor:pointer;transition:transform 0.15s;outline:none;user-select:none;padding:2px;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">⭐</button>
+            \`).join('')}
+          </div>
+          <button onclick="window.open('\${targetUrl}', '_blank', 'noopener,noreferrer');document.getElementById('greview-widget-overlay').remove();" style="width:100%;background:#077B8A;color:#ffffff;border:none;border-radius:14px;padding:14px;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(7,123,138,0.25);" onmouseover="this.style.background='#066572'" onmouseout="this.style.background='#077B8A'">Write Review direct on Google ↗</button>
+        </div>
+      </div>
+      <style>
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+      </style>
+    \`;
+    document.body.appendChild(overlay);
+  }
+})();
+</script>`;
+  };
+
+  const handleCopyWidgetCode = () => {
+    navigator.clipboard.writeText(getWidgetCode())
+      .then(() => {
+        setCopiedWidget(true);
+        setTimeout(() => setCopiedWidget(false), 2000);
+      });
+  };
+  
   // Custom poster options
   const [posterSlogan, setPosterSlogan] = useState('Had a 5-star mountain tour? Scan the QR code with your camera to share your review on Google!');
   const [borderColor, setBorderColor] = useState('#077B8A');
@@ -646,27 +700,81 @@ export default function ReviewsConsole() {
 
                 {/* DYNAMIC URL INPUT FIELDS */}
                 {qrMode === 'website_public' && (
-                  <div className="space-y-1.5 animate-fadeIn">
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center justify-between select-none">
-                      <span>Your Official Website Domain URL</span>
-                      <a 
-                        href={safePublicWebsiteUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-[#077B8A] hover:text-[#066572] font-bold flex items-center gap-0.5 hover:underline decoration-2"
+                  <div className="space-y-3 animate-fadeIn">
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center justify-between select-none">
+                        <span>Your Official Website Domain URL</span>
+                        <a 
+                          href={safePublicWebsiteUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-[#077B8A] hover:text-[#066572] font-bold flex items-center gap-0.5 hover:underline decoration-2"
+                        >
+                          Open Website Link ↗
+                        </a>
+                      </label>
+                      <input
+                        type="url"
+                        value={publicWebsiteUrl}
+                        onChange={(e) => setPublicWebsiteUrl(e.target.value)}
+                        placeholder="e.g. https://morainego.ca/?greview=true"
+                        className="w-full bg-slate-50 border-2 border-[#077B8A]/20 p-3 text-xs rounded-xl font-mono text-[#0D1B2A] focus:outline focus:outline-[#077B8A] focus:bg-white focus:border-[#077B8A]"
+                      />
+                      <div className="bg-emerald-50 border border-emerald-150 p-2.5 rounded-xl text-[10px] text-emerald-850 leading-normal font-sans font-medium">
+                        ✓ <strong>Scan behavior:</strong> Guests scan this, open your real domain, and immediately get the beautiful 5-star rating overlay we built for you.
+                      </div>
+                    </div>
+
+                    {/* TWO-MINUTE 5-STAR OVERLAY INTEGRATION GUIDE FOR THEIR PRODUCTION SITE */}
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setShowWidgetCode(!showWidgetCode)}
+                        className="w-full p-3 bg-slate-50 hover:bg-slate-100 transition flex items-center justify-between text-left cursor-pointer"
                       >
-                        Open Website Link ↗
-                      </a>
-                    </label>
-                    <input
-                      type="url"
-                      value={publicWebsiteUrl}
-                      onChange={(e) => setPublicWebsiteUrl(e.target.value)}
-                      placeholder="e.g. https://morainego.ca/?greview=true"
-                      className="w-full bg-slate-50 border-2 border-[#077B8A]/20 p-3 text-xs rounded-xl font-mono text-[#0D1B2A] focus:outline focus:outline-[#077B8A] focus:bg-white focus:border-[#077B8A]"
-                    />
-                    <div className="bg-emerald-50 border border-emerald-150 p-2.5 rounded-xl text-[10px] text-emerald-850 leading-normal font-sans font-medium">
-                      ✓ <strong>Scan behavior:</strong> Guests scan this, open your real domain, and immediately get the beautiful 5-star rating overlay we built for you.
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">✨</span>
+                          <span className="text-xs font-extrabold text-[#0D1B2A] uppercase tracking-wide">
+                            How to make stars show on morainego.ca
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold text-[#077B8A]">
+                          {showWidgetCode ? 'Hide Guide ✕' : 'View Integration Script ⚙️'}
+                        </span>
+                      </button>
+
+                      {showWidgetCode && (
+                        <div className="p-4 border-t border-slate-100 space-y-3">
+                          <p className="text-[11px] text-gray-600 leading-relaxed">
+                            Since your official website <code className="bg-slate-100 px-1 rounded font-mono">morainego.ca</code> is hosted separately, the 5-star mobile pop-up is not showing on your phone when scanning that link.
+                            <br /><br />
+                            To make the 5-star stars overlay display <strong>instantly and beautifully on your live website</strong> (completely warning-free without any ScamAdviser blocks), simply paste this 2-minute snippet before the closing <code className="bg-slate-100 px-1 rounded font-mono">&lt;/body&gt;</code> tag of your website:
+                          </p>
+
+                          <div className="relative">
+                            <pre className="bg-slate-900 text-slate-100 p-3 rounded-xl text-[9.5px] font-mono overflow-x-auto max-h-48 leading-relaxed whitespace-pre-wrap select-all">
+                              {getWidgetCode()}
+                            </pre>
+                            <button
+                              type="button"
+                              onClick={handleCopyWidgetCode}
+                              className="absolute top-2 right-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-[9px] uppercase px-3 py-1.5 rounded transition shadow"
+                            >
+                              {copiedWidget ? '✓ Copied!' : 'Copy Snippet'}
+                            </button>
+                          </div>
+                          
+                          <div className="bg-slate-50 p-2.5 rounded-xl text-[10px] text-slate-500 leading-normal font-sans space-y-1 border border-slate-150">
+                            <strong>How to use this:</strong>
+                            <ol className="list-decimal pl-4 space-y-0.5">
+                              <li>Copy the snippet above.</li>
+                              <li>Go to your WordPress, Squarespace, or custom HTML code editor.</li>
+                              <li>Paste the script directly before the end of the page body.</li>
+                              <li>Your QR code scans will now work beautifully and warning-free on your live domain!</li>
+                            </ol>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -741,6 +849,25 @@ export default function ReviewsConsole() {
                         <li>Loads the gorgeous 5-star review page on your phone instantly.</li>
                         <li>Successfully redirects riders to your live Google business listing when they select stars!</li>
                       </ul>
+                    </div>
+
+                    {/* SCAM ADVISER & CARRIER BLOCKS EXPLANATION */}
+                    <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl text-[11px] text-amber-950 leading-relaxed font-sans mt-2">
+                      <div className="flex items-center gap-2 text-amber-800 font-extrabold uppercase text-[10px] tracking-wider mb-1.5">
+                        <span className="text-sm">⚠️</span> SCAMADVISER / CARRIER ALERT INFO:
+                      </div>
+                      The **Draft Sandbox Preview URL** uses a newly generated Google Cloud Run testing domain (<code className="bg-amber-100/50 px-1 rounded font-mono">.run.app</code>). 
+                      Because this is a dynamic URL with a long code hash, **phone carrier spam-blockers (like T-Mobile Scam Shield) and third-party extensions (like ScamAdviser)** sometimes flag it as &quot;suspicious&quot; simply because they don't recognize the development domain yet.
+                      <br /><br />
+                      <strong>How to test on mobile without ANY warnings:</strong>
+                      <ol className="list-decimal pl-4 mt-1.5 space-y-1.5 font-semibold text-amber-900">
+                        <li>
+                          <strong>Choose &quot;Direct to Google Business Card&quot; (Recommended)</strong>: This encodes a direct <code className="bg-amber-100/50 px-1 rounded">google.com</code> reviews link. It will **never** trigger ScamAdviser, and works 100% on all Apple / Google mobile devices.
+                        </li>
+                        <li>
+                          <strong>Or use your Custom Domain</strong>: Select &quot;Live Official Website&quot; above and add our 2-minute script to your site <code className="bg-amber-100/50 px-1 rounded">morainego.ca</code>. This loads the stars overlay on your own trusted domain completely warning-free!
+                        </li>
+                      </ol>
                     </div>
                   </div>
                 )}

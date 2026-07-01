@@ -77,8 +77,8 @@ export default function ReviewGateway({
       setShowDiagnostics(true);
       
       // ONLY change window location if we are NOT running in an iframe layout
-      // on Google AI Studio or mobile sandboxes to prevent X-Frame-Options SAMEORIGIN crashes!
-      const isIframe = typeof window !== 'undefined' && (window.self !== window.top || window.location.hostname.includes('run.app'));
+      // on Google AI Studio to prevent X-Frame-Options SAMEORIGIN crashes!
+      const isIframe = typeof window !== 'undefined' && window.self !== window.top;
       if (!isIframe) {
         setTimeout(() => {
           try {
@@ -105,7 +105,7 @@ export default function ReviewGateway({
       console.warn('Popup blocked:', innerErr);
     }
     
-    const isIframe = typeof window !== 'undefined' && (window.self !== window.top || window.location.hostname.includes('run.app'));
+    const isIframe = typeof window !== 'undefined' && window.self !== window.top;
     if (!isIframe) {
       try {
         window.location.href = googleReviewUrl;

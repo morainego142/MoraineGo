@@ -114,13 +114,13 @@ export default function Footer({ onAdminOpen }: FooterProps) {
               </div>
             </div>
 
-            <a href="https://instagram.com/moraine_go" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
+            <a href="https://instagram.com/morainelego" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
               <span className="p-2 rounded bg-white/5 group-hover:bg-[#E1306C] transition">
                 <Instagram className="w-4 h-4 text-brand-gold group-hover:text-white transition" />
               </span>
               <div>
                 <p className="text-[10px] text-slate-400 uppercase">Instagram</p>
-                <p className="font-bold text-white group-hover:text-brand-cyan transition">@moraine_go</p>
+                <p className="font-bold text-white group-hover:text-brand-cyan transition">@morainelego</p>
               </div>
             </a>
           </div>
