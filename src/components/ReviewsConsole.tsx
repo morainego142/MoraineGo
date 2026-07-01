@@ -38,9 +38,9 @@ export default function ReviewsConsole() {
 
   const [publicWebsiteUrl, setPublicWebsiteUrl] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('moraine_public_website_url') || 'https://morainego.ca/?greview=true';
+      return localStorage.getItem('moraine_public_website_url') || 'https://morainegotours.in/?greview=true';
     }
-    return 'https://morainego.ca/?greview=true';
+    return 'https://morainegotours.in/?greview=true';
   });
 
   const [directGoogleUrl, setDirectGoogleUrl] = useState(() => {
@@ -717,7 +717,7 @@ export default function ReviewsConsole() {
                         type="url"
                         value={publicWebsiteUrl}
                         onChange={(e) => setPublicWebsiteUrl(e.target.value)}
-                        placeholder="e.g. https://morainego.ca/?greview=true"
+                        placeholder="e.g. https://morainegotours.in/?greview=true"
                         className="w-full bg-slate-50 border-2 border-[#077B8A]/20 p-3 text-xs rounded-xl font-mono text-[#0D1B2A] focus:outline focus:outline-[#077B8A] focus:bg-white focus:border-[#077B8A]"
                       />
                       <div className="bg-emerald-50 border border-emerald-150 p-2.5 rounded-xl text-[10px] text-emerald-850 leading-normal font-sans font-medium">
@@ -735,7 +735,7 @@ export default function ReviewsConsole() {
                         <div className="flex items-center gap-2">
                           <span className="text-sm">✨</span>
                           <span className="text-xs font-extrabold text-[#0D1B2A] uppercase tracking-wide">
-                            How to make stars show on morainego.ca
+                            How to make stars show on morainegotours.in
                           </span>
                         </div>
                         <span className="text-xs font-bold text-[#077B8A]">
@@ -746,7 +746,7 @@ export default function ReviewsConsole() {
                       {showWidgetCode && (
                         <div className="p-4 border-t border-slate-100 space-y-3">
                           <p className="text-[11px] text-gray-600 leading-relaxed">
-                            Since your official website <code className="bg-slate-100 px-1 rounded font-mono">morainego.ca</code> is hosted separately, the 5-star mobile pop-up is not showing on your phone when scanning that link.
+                            Since your official website <code className="bg-slate-100 px-1 rounded font-mono">morainegotours.in</code> is hosted separately, the 5-star mobile pop-up is not showing on your phone when scanning that link.
                             <br /><br />
                             To make the 5-star stars overlay display <strong>instantly and beautifully on your live website</strong> (completely warning-free without any ScamAdviser blocks), simply paste this 2-minute snippet before the closing <code className="bg-slate-100 px-1 rounded font-mono">&lt;/body&gt;</code> tag of your website:
                           </p>
@@ -865,7 +865,7 @@ export default function ReviewsConsole() {
                           <strong>Choose &quot;Direct to Google Business Card&quot; (Recommended)</strong>: This encodes a direct <code className="bg-amber-100/50 px-1 rounded">google.com</code> reviews link. It will **never** trigger ScamAdviser, and works 100% on all Apple / Google mobile devices.
                         </li>
                         <li>
-                          <strong>Or use your Custom Domain</strong>: Select &quot;Live Official Website&quot; above and add our 2-minute script to your site <code className="bg-amber-100/50 px-1 rounded">morainego.ca</code>. This loads the stars overlay on your own trusted domain completely warning-free!
+                          <strong>Or use your Custom Domain</strong>: Select &quot;Live Official Website&quot; above and add our 2-minute script to your site <code className="bg-amber-100/50 px-1 rounded">morainegotours.in</code>. This loads the stars overlay on your own trusted domain completely warning-free!
                         </li>
                       </ol>
                     </div>
@@ -959,7 +959,7 @@ export default function ReviewsConsole() {
                   <button
                     onClick={() => {
                       setQrMode('website_public');
-                      setPublicWebsiteUrl('https://morainego.ca/?greview=true');
+                      setPublicWebsiteUrl('https://morainegotours.in/?greview=true');
                       setDirectGoogleUrl('https://www.google.com/maps/search/?api=1&query=Moraine+Go+Tours+Banff+Shuttle');
                     }}
                     id="btn-reset-review-url"
